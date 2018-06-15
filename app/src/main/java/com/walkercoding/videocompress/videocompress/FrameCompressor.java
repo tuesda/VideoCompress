@@ -95,7 +95,7 @@ public class FrameCompressor {
         return encoderInputBuffers[index];
     }
 
-    private void fromExtractorToDecoder(ContainerConverter.Param containerParam) {
+    private void decodeFromExtractor(ContainerConverter.Param containerParam) {
         if (!inputDone) {
             final int index = containerParam.getSampleTrackIndex();
             if (index == containerParam.videoIndex) {
@@ -129,7 +129,7 @@ public class FrameCompressor {
      * @return true -- encoder doesn't has pending surface that need be written to muxer
      * so need feed new surface to encoder
      */
-    private boolean fromEncoderToMuxer(ContainerConverter.Param containerParam, CompressInfo compressInfo) throws Exception {
+    private boolean encodeToMuxer(ContainerConverter.Param containerParam, CompressInfo compressInfo) throws Exception {
         int encoderOutputIndex = encoder.dequeueOutputBuffer(info, TIMEOUT_USEC);
         if (encoderOutputIndex == MediaCodec.INFO_TRY_AGAIN_LATER) {
             return true;
@@ -197,7 +197,7 @@ public class FrameCompressor {
         videoTrackIndex = containerParam.addTrack(newFormat);
     }
 
-    private void fromDecoderToEncoder(CompressInfo compressInfo, DeviceOption deviceOption, AdjustSize adjustSize) {
+    private void decoderToEncoder(CompressInfo compressInfo, DeviceOption deviceOption, AdjustSize adjustSize) {
         if (!decoderDone) {
             int decoderStatus = decoder.dequeueOutputBuffer(info, TIMEOUT_USEC);
             if (decoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER
@@ -269,39 +269,39 @@ public class FrameCompressor {
     }
 
     long run(final CompressInfo compressInfo, final ContainerConverter.Param containerParam) {
-        try {
-            final DeviceOption deviceOption = getDeviceOption();
-            final AdjustSize adjustSize = getAdjustSize(compressInfo, deviceOption);
+        final DeviceOption deviceOption = getDeviceOption();
+        final AdjustSize adjustSize = getAdjustSize(compressInfo, deviceOption);
 
-            containerParam.selectVideoIndex();
-            containerParam.seekIfNeed(compressInfo.startTime);
+        containerParam.selectVideoIndex();
+        containerParam.seekIfNeed(compressInfo.startTime);
+
+        try {
             initCoders(containerParam, compressInfo, deviceOption);
 
-            final Consumer<Throwable> onError = new Consumer<Throwable>() {
-                @Override
-                public void accept(Throwable throwable) throws Exception {
-                    if (throwable instanceof Exception) {
-                        throw (Exception) throwable;
-                    }
-                }
-            };
             Observable.create(new ObservableOnSubscribe<Object>() {
                 @Override
                 public void subscribe(ObservableEmitter<Object> emitter) throws Exception {
                     while (!inputDone) {
-                        fromExtractorToDecoder(containerParam);
+                        decodeFromExtractor(containerParam);
                     }
                 }
             })
                     .subscribeOn(Schedulers.newThread())
-                    .doOnError(onError)
+                    .doOnError(new Consumer<Throwable>() {
+                        @Override
+                        public void accept(Throwable throwable) throws Exception {
+                            if (throwable instanceof Exception) {
+                                throw (Exception) throwable;
+                            }
+                        }
+                    })
                     .subscribe();
 
             while (!outputDone) {
                 // write encoder data to muxer first, then read to encoder from decoder
-                if (fromEncoderToMuxer(containerParam, compressInfo)) {
+                if (encodeToMuxer(containerParam, compressInfo)) {
                     if (!decoderDone) {
-                        fromDecoderToEncoder(compressInfo, deviceOption, adjustSize);
+                        decoderToEncoder(compressInfo, deviceOption, adjustSize);
                     }
                 }
             }
@@ -311,7 +311,11 @@ public class FrameCompressor {
         }
 
         containerParam.unselectVideoIndex();
+        release();
+        return videoStartTime;
+    }
 
+    private void release() {
         if (outputSurface != null) {
             outputSurface.release();
         }
@@ -326,8 +330,6 @@ public class FrameCompressor {
             encoder.stop();
             encoder.release();
         }
-
-        return videoStartTime;
     }
 
     private static class DeviceOption {
