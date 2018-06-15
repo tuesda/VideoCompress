@@ -23,7 +23,9 @@ public class ContainerConverter {
             videoStartTime = compressInfo.startTime;
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
             // mux video
-            if (compressInfo.needCompress()) {
+            if (compressInfo.needCompress()
+                    // todo need support sdk 17
+                    && Build.VERSION.SDK_INT >= 18) {
                 final int videoIndex = Utils.selectTrack(extractor, false);
                 if (videoIndex >= 0) {
                     final long videoTime = new FrameCompressor().run(compressInfo, new Param(extractor, mediaMuxer, videoIndex));

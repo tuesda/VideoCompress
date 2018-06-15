@@ -244,11 +244,6 @@ public class FrameCompressor {
                             ByteBuffer rgbBuf = outputSurface.getFrame();
                             ByteBuffer yuvBuf = getEncoderInputBuffers(inputBufIndex);
                             yuvBuf.clear();
-                            if (true) {
-                                // todo need implement JniUtils.convertVideoFrame!
-                                compressInfo.error = true;
-                                return;
-                            }
                             JniUtils.convertVideoFrame(rgbBuf, yuvBuf, deviceOption.colorFormat, compressInfo.resultWidth, compressInfo.resultHeight, adjustSize.padding, deviceOption.swapUV);
                             encoder.queueInputBuffer(inputBufIndex, 0, adjustSize.bufferSize, info.presentationTimeUs, 0);
                         } else {
