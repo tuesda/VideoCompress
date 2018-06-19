@@ -271,8 +271,8 @@ class FrameCompressor {
                             LogUtils.i("input buffer not available")
                         }
                     }
-                } catch (e: Exception) {
-                    LogUtils.e(e)
+                } catch (ignore: Exception) {
+                    // ignore the frame if error
                 }
 
             }
@@ -297,33 +297,28 @@ class FrameCompressor {
         containerParam.selectVideoIndex()
         containerParam.seekIfNeed(compressInfo.startTime)
 
-        try {
-            initCoders(containerParam, compressInfo, deviceOption)
+        initCoders(containerParam, compressInfo, deviceOption)
 
-            Observable.create(ObservableOnSubscribe<Any> {
-                while (!inputDone) {
-                    decodeFromExtractor(containerParam)
+        Observable.create(ObservableOnSubscribe<Any> {
+            while (!inputDone) {
+                decodeFromExtractor(containerParam)
+            }
+        })
+                .subscribeOn(Schedulers.newThread())
+                .doOnError { throwable ->
+                    if (throwable is Exception) {
+                        throw throwable
+                    }
                 }
-            })
-                    .subscribeOn(Schedulers.newThread())
-                    .doOnError { throwable ->
-                        if (throwable is Exception) {
-                            throw throwable
-                        }
-                    }
-                    .subscribe()
+                .subscribe()
 
-            while (!outputDone) {
-                // write encoder data to muxer first, then read to encoder from decoder
-                if (encodeToMuxer(containerParam, compressInfo)) {
-                    if (!decoderDone) {
-                        decoderToEncoder(compressInfo, deviceOption, adjustSize)
-                    }
+        while (!outputDone) {
+            // write encoder data to muxer first, then read to encoder from decoder
+            if (encodeToMuxer(containerParam, compressInfo)) {
+                if (!decoderDone) {
+                    decoderToEncoder(compressInfo, deviceOption, adjustSize)
                 }
             }
-        } catch (e: Exception) {
-            LogUtils.e(e)
-            compressInfo.error = true
         }
 
         containerParam.unselectVideoIndex()

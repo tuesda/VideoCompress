@@ -10,8 +10,6 @@ import com.walkercoding.videocompress.videocompress.helpers.Mp4Movie
 import java.nio.ByteBuffer
 
 class ContainerConverter {
-    //    private var extractor: MediaExtractor? = null
-//    private var mediaMuxer: MP4Builder? = null
     private var videoStartTime = 0L
 
     internal fun convert(compressInfo: CompressInfo) {
@@ -30,7 +28,6 @@ class ContainerConverter {
             extractor = internalExtractor
             muxer = internalMuxer
 
-            Utils.checkConversionCanceled()
             videoStartTime = compressInfo.startTime
             val info = MediaCodec.BufferInfo()
             // mux video
@@ -54,18 +51,9 @@ class ContainerConverter {
             if (!compressInfo.error) {
                 Utils.readAndWriteTrack(compressInfo, internalExtractor, internalMuxer, info, videoStartTime, true)
             }
-        } catch (e: Exception) {
-            compressInfo.error = true
-            LogUtils.e(e)
         } finally {
             extractor?.release()
-            muxer?.apply {
-                try {
-                    finishMovie()
-                } catch (e: Exception) {
-                    LogUtils.e(e)
-                }
-            }
+            muxer?.finishMovie()
         }
     }
 

@@ -74,10 +74,6 @@ object Utils {
         }
     }
 
-    internal fun checkConversionCanceled() {
-        // do nothing
-    }
-
     @Throws(Exception::class)
     internal fun readAndWriteTrack(compressInfo: CompressInfo, extractor: MediaExtractor, mediaMuxer: MP4Builder, info: MediaCodec.BufferInfo, start: Long, isAudio: Boolean): Long {
         val trackIndex = Utils.selectTrack(extractor, isAudio)
@@ -95,11 +91,7 @@ object Utils {
             val buffer = ByteBuffer.allocateDirect(maxBufferSize)
             var startTime: Long = -1
 
-            Utils.checkConversionCanceled()
-
             while (!inputDone) {
-                Utils.checkConversionCanceled()
-
                 var eof = false
                 val index = extractor.sampleTrackIndex
                 if (index == trackIndex) {

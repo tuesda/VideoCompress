@@ -1,6 +1,5 @@
 package com.walkercoding.videocompress.videocompress
 
-import android.util.Log
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -54,7 +53,6 @@ object VideoCompressor {
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate {
-                    Log.e("zl", "compress time ${System.currentTimeMillis() - startTime} duration ${param.durationUs / 1000}")
                     isCompressing = false
                     VideoCompressor.startNewCompress()
                 }

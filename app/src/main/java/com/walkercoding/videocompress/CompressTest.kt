@@ -39,7 +39,6 @@ object CompressTest {
 
     fun test(context: Context) {
         compress(getCompressParam(context, MEIZU_1))
-        compress(getCompressParam(context, MEIZU_2))
     }
 
     private fun compress(param: CompressParam) {
@@ -48,7 +47,7 @@ object CompressTest {
 //                .doOnNext { Log.e("zl", "progress $it path ${param.filePath}") }
                 .doOnError { Log.e("zl", "Error $it path ${param.filePath}") }
                 .doOnComplete { Log.e("zl", "Done ${param.filePath}") }
-                .subscribe()
+                .subscribe({}, {})
     }
 
     fun getExternalPictureFileDir(context: Context): File {
