@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import java.io.File;
+import java.util.Locale;
 
 public class ProgressTracker {
 
@@ -16,7 +16,7 @@ public class ProgressTracker {
         videoConvertFirstWrite = true;
     }
 
-    void didWriteData(final File file, final boolean last, final boolean error) {
+    void didWriteData(final boolean finish, final boolean error, final float fraction) {
         final boolean firstWrite = videoConvertFirstWrite;
         if (firstWrite) {
             videoConvertFirstWrite = false;
@@ -24,25 +24,14 @@ public class ProgressTracker {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (error || last) {
-//                    videoConvertQueue.remove(editInfo);
-//                    startVideoConvertFromQueue();
-                    // remove from convert queue, start new convert
-                    Log.e("zl", "DoneOrError: " + error + " file " + file.getAbsolutePath());
-                }
-                if (error) {
-                    // NotificationCenter.getInstance().postNotificationName(NotificationCenter.FilePreparingFailed, editInfo, file.toString());
-                    // notify error
-                    Log.e("zl", "FilePreparingFailed");
+                if (error || finish) {
+                    Log.e("zl", error ? "Error!" : "Done!");
                 } else {
                     if (firstWrite) {
-                        // NotificationCenter.getInstance().postNotificationName(NotificationCenter.FilePreparingStarted, editInfo, file.toString());
-                        // notify converting start
-                        Log.e("zl", "FilePreparingStarted");
+                        Log.e("zl", "Start!");
+                    } else {
+                        Log.e("zl", String.format(Locale.US, "Progress:%2d%%", (int) (fraction * 100)));
                     }
-                    // NotificationCenter.getInstance().postNotificationName(NotificationCenter.FileNewChunkAvailable, editInfo, file.toString(), last ? file.length() : 0);
-                    // notify convert progress
-                    Log.e("zl", "FileNewChunkAvailable " + file.length() / 1024 + "kb");
                 }
             }
         });

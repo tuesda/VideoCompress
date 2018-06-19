@@ -19,7 +19,7 @@ public class VideoCompressor {
         if (compressInfo.isSizeValid()) {
             final long start = System.currentTimeMillis();
             new ContainerConverter().convert(compressInfo);
-            LogUtils.e("compress time = " + (System.currentTimeMillis() - start));
+            LogUtils.i("compress time = " + (System.currentTimeMillis() - start));
         } else {
             IS_CONVERTING.set(false);
             compressInfo.didWriteData(true, true);

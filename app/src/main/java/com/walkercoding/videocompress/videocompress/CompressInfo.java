@@ -15,8 +15,9 @@ public class CompressInfo {
     int resultWidth;
     int resultHeight;
     int rotationValue;
-    int originalWidth;
-    int originalHeight;
+    final int originalWidth;
+    final int originalHeight;
+    final long durationUs;
     int bitrate;
     int rotateRender;
 
@@ -27,26 +28,25 @@ public class CompressInfo {
 
     final ProgressTracker progressTracker = new ProgressTracker();
 
-    private CompressInfo() {
+    private CompressInfo(CompressParam param) {
+        videoPath = param.filePath;
+        startTime = param.startTime;
+        endTime = param.endTime;
+        resultWidth = param.resultWidth;
+        resultHeight = param.resultHeight;
+        rotationValue = param.rotationValue;
+        originalWidth = param.originalWidth;
+        originalHeight = param.originalHeight;
+        durationUs = param.durationUs;
+        bitrate = param.bitrate;
+        rotateRender = 0;
+        inputFile = new File(videoPath);
+        cacheFile = new File(param.cacheFilePath);
     }
 
     public static CompressInfo fromParam(CompressParam param) {
-        CompressInfo info = new CompressInfo();
-        info.videoPath = param.filePath;
-        info.startTime = param.startTime;
-        info.endTime = param.endTime;
-        info.resultWidth = param.resultWidth;
-        info.resultHeight = param.resultHeight;
-        info.rotationValue = param.rotationValue;
-        info.originalWidth = param.originalWidth;
-        info.originalHeight = param.originalHeight;
-        info.bitrate = param.bitrate;
-        info.rotateRender = 0;
-        info.inputFile = new File(info.videoPath);
-        info.cacheFile = new File(param.cacheFilePath);
-
+        CompressInfo info = new CompressInfo(param);
         info.init();
-
         return info;
     }
 
@@ -85,8 +85,12 @@ public class CompressInfo {
         return resultWidth != originalWidth || resultHeight != originalHeight || rotateRender != 0;
     }
 
-    void didWriteData(final boolean last, final boolean error) {
-        progressTracker.didWriteData(cacheFile, last, error);
+    void didWriteData(final boolean finish, final boolean error) {
+        didWriteData(finish, error, -1);
+    }
+
+    void didWriteData(final boolean finish, final boolean error, final long presentationTimeUs) {
+        progressTracker.didWriteData(finish, error, presentationTimeUs > 0 ? (float) (presentationTimeUs / (double) durationUs) : 0);
     }
 
     void firstWrite() {

@@ -13,4 +13,5 @@ public class CompressParam {
     public int rotationValue = -1;
     public int originalWidth;
     public int originalHeight;
+    public long durationUs;
 }

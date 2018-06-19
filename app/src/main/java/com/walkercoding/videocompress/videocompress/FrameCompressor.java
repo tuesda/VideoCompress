@@ -158,7 +158,7 @@ public class FrameCompressor {
         if (info.size > 1) {
             if ((info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) == 0) {
                 if (containerParam.writeSampleData(videoTrackIndex, encodedData, info, true)) {
-                    compressInfo.didWriteData(false, false);
+                    compressInfo.didWriteData(false, false, info.presentationTimeUs);
                 }
             } else if (videoTrackIndex == INVALID_VIDEO_TRACK_INDEX) {
                 addVideoTrackToMuxer(compressInfo, containerParam, encodedData);
@@ -206,7 +206,7 @@ public class FrameCompressor {
             }
             if (decoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 MediaFormat newFormat = decoder.getOutputFormat();
-                LogUtils.e("newFormat = " + newFormat);
+                LogUtils.i("newFormat = " + newFormat);
                 return;
             }
             if (decoderStatus < 0) {
@@ -224,7 +224,7 @@ public class FrameCompressor {
                 // cut header
                 if (info.presentationTimeUs < compressInfo.startTime) {
                     doRender = false;
-                    LogUtils.e("drop frame startTime = " + compressInfo.startTime + " present time = " + info.presentationTimeUs);
+                    LogUtils.i("drop frame startTime = " + compressInfo.startTime + " present time = " + info.presentationTimeUs);
                 } else {
                     videoStartTime = info.presentationTimeUs;
                 }
@@ -247,7 +247,7 @@ public class FrameCompressor {
                             JniUtils.convertVideoFrame(rgbBuf, yuvBuf, deviceOption.colorFormat, compressInfo.resultWidth, compressInfo.resultHeight, adjustSize.padding, deviceOption.swapUV);
                             encoder.queueInputBuffer(inputBufIndex, 0, adjustSize.bufferSize, info.presentationTimeUs, 0);
                         } else {
-                            LogUtils.e("input buffer not available");
+                            LogUtils.i("input buffer not available");
                         }
                     }
                 } catch (Exception e) {
@@ -255,7 +255,7 @@ public class FrameCompressor {
                 }
             }
             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                LogUtils.e("decoder stream end");
+                LogUtils.i("decoder stream end");
                 if (Build.VERSION.SDK_INT >= 18) {
                     encoder.signalEndOfInputStream();
                 } else {
@@ -365,11 +365,11 @@ public class FrameCompressor {
             } else if (codecName.equals("OMX.TI.DUCATI1.VIDEO.H264E")) {
                 option.processorType = PROCESSOR_TYPE_TI;
             }
-            LogUtils.e("codec = " + codecInfo.getName() + " manufacturer = " + option.manufacturer + "device = " + Build.MODEL);
+            LogUtils.i("codec = " + codecInfo.getName() + " manufacturer = " + option.manufacturer + "device = " + Build.MODEL);
         } else {
             option.colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
         }
-        LogUtils.e("colorFormat = " + option.colorFormat);
+        LogUtils.i("colorFormat = " + option.colorFormat);
         return option;
     }
 

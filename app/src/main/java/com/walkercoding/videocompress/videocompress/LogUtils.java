@@ -7,7 +7,7 @@ public class LogUtils {
         Log.e("zl", "Error throwable: " + e.getMessage());
     }
 
-    public static void e(final String message) {
+    public static void i(final String message) {
         Log.e("zl", "Error msg: " + message);
     }
 }
