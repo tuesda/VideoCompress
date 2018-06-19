@@ -42,7 +42,7 @@ public class ProgressTracker {
                     }
                     // NotificationCenter.getInstance().postNotificationName(NotificationCenter.FileNewChunkAvailable, editInfo, file.toString(), last ? file.length() : 0);
                     // notify convert progress
-//                    Log.e("zl", "FileNewChunkAvailable " + file.length() / 1024 + "kb");
+                    Log.e("zl", "FileNewChunkAvailable " + file.length() / 1024 + "kb");
                 }
             }
         });
