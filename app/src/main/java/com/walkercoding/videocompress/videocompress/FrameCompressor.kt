@@ -81,7 +81,7 @@ class FrameCompressor {
         // setup decoder
         decoder = MediaCodec.createDecoderByType(containerParam.getInputFormat().getString(MediaFormat.KEY_MIME))
         if (Build.VERSION.SDK_INT >= 18) {
-            outputSurface = OutputSurface()
+            outputSurface = OutputSurface(compressInfo.rotateRender)
         } else {
             outputSurface = OutputSurface(compressInfo.resultWidth, compressInfo.resultHeight, compressInfo.rotateRender)
         }

@@ -56,7 +56,8 @@ public class OutputSurface implements SurfaceTexture.OnFrameAvailableListener {
         setup();
     }
 
-    public OutputSurface() {
+    public OutputSurface(int rotate) {
+        rotateRender = rotate;
         setup();
     }
 
