@@ -14,7 +14,8 @@ import java.util.Locale;
 public class CompressTest {
 
     //        private static final String TEST_VIDEO_FILE_PATH = "/storage/emulated/0/DCIM/Video/V80608-140857.mp4"; // 10s
-    private static final String TEST_VIDEO_FILE_PATH = "/storage/emulated/0/DCIM/Video/V80209-151237.mp4"; // 1 min 122M
+//    private static final String TEST_VIDEO_FILE_PATH = "/storage/emulated/0/DCIM/Video/V80209-151237.mp4"; // 1 min 122M
+    private static final String TEST_VIDEO_FILE_PATH = "/storage/emulated/0/DCIM/Camera/VID_20180616_225210.mp4"; // 1280 * 720
 
     public static void test(Context context) {
         File videoFile = new File(TEST_VIDEO_FILE_PATH);
@@ -25,8 +26,8 @@ public class CompressTest {
         editInfo.filePath = videoFile.getAbsolutePath();
         editInfo.cacheFilePath = cacheFile.getPath();
 
-        editInfo.originalWidth = 1920;
-        editInfo.originalHeight = 1080;
+        editInfo.originalWidth = 1280;
+        editInfo.originalHeight = 720;
         editInfo.resultWidth = editInfo.originalWidth / 2;
         editInfo.resultHeight = editInfo.originalHeight / 2;
         editInfo.bitrate = 921600;
