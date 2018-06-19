@@ -92,6 +92,7 @@ object Utils {
             var startTime: Long = -1
 
             while (!inputDone) {
+                CancelChecker.checkCanceled()
                 var eof = false
                 val index = extractor.sampleTrackIndex
                 if (index == trackIndex) {

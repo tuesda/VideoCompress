@@ -5,8 +5,11 @@ import android.os.Environment
 import android.util.Log
 import com.walkercoding.videocompress.videocompress.CompressParam
 import com.walkercoding.videocompress.videocompress.VideoCompressor
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 object CompressTest {
 
@@ -38,7 +41,13 @@ object CompressTest {
         get() = Environment.getExternalStorageDirectory()
 
     fun test(context: Context) {
+        val param = getCompressParam(context, MEIZU_2)
+        compress(param)
         compress(getCompressParam(context, MEIZU_1))
+        Observable.just(Any())
+                .delay(5, TimeUnit.SECONDS, AndroidSchedulers.mainThread())
+                .doOnNext { VideoCompressor.cancel(param) }
+                .subscribe()
     }
 
     private fun compress(param: CompressParam) {

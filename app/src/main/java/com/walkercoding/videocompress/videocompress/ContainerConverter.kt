@@ -9,12 +9,12 @@ import com.walkercoding.videocompress.videocompress.helpers.MP4Builder
 import com.walkercoding.videocompress.videocompress.helpers.Mp4Movie
 import java.nio.ByteBuffer
 
-class ContainerConverter {
-    private var videoStartTime = 0L
+object ContainerConverter {
 
     internal fun convert(compressInfo: CompressInfo) {
         var extractor: MediaExtractor? = null
         var muxer: MP4Builder? = null
+        var videoStartTime: Long
         try {
             val internalExtractor = MediaExtractor()
             internalExtractor.setDataSource(compressInfo.videoPath!!)
@@ -30,6 +30,7 @@ class ContainerConverter {
 
             videoStartTime = compressInfo.startTime
             val info = MediaCodec.BufferInfo()
+            CancelChecker.checkCanceled()
             // mux video
             if (compressInfo.needCompress()
                     // todo need support sdk 17

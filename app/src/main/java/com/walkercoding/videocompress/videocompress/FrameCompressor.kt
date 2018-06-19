@@ -301,6 +301,7 @@ class FrameCompressor {
 
         Observable.create(ObservableOnSubscribe<Any> {
             while (!inputDone) {
+                CancelChecker.checkCanceled()
                 decodeFromExtractor(containerParam)
             }
         })
@@ -310,9 +311,10 @@ class FrameCompressor {
                         throw throwable
                     }
                 }
-                .subscribe()
+                .subscribe({}, {})
 
         while (!outputDone) {
+            CancelChecker.checkCanceled()
             // write encoder data to muxer first, then read to encoder from decoder
             if (encodeToMuxer(containerParam, compressInfo)) {
                 if (!decoderDone) {

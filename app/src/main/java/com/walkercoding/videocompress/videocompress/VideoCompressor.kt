@@ -4,11 +4,10 @@ import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.util.*
 
 object VideoCompressor {
 
-    private var isCompressing = false
+    private var compressingParam: CompressParam? = null
     private var startTime = 0L
 
     private val pendingList: MutableList<CompressMeta> = ArrayList()
@@ -20,8 +19,21 @@ object VideoCompressor {
         }).flatMap { compressInternal(it) }
     }
 
+    fun cancel(param: CompressParam) {
+        val removeList: MutableList<CompressMeta> = ArrayList()
+        pendingList.forEach {
+            if (it.compressParam == param) {
+                removeList.add(it)
+            }
+        }
+        pendingList.removeAll(removeList)
+        if (compressingParam == param) {
+            CancelChecker.cancel()
+        }
+    }
+
     private fun startNewCompress() {
-        if (!isCompressing && !pendingList.isEmpty()) {
+        if (compressingParam == null && !pendingList.isEmpty()) {
             val meta = pendingList.removeAt(0)
             meta.emitter.onNext(meta.compressParam)
             meta.emitter.onComplete()
@@ -40,7 +52,7 @@ object VideoCompressor {
                 listener.onError(IllegalArgumentException("Result size not valid! width=${compressInfo.resultWidth}, height=${compressInfo.resultHeight}"))
                 return@createBlock
             }
-            ContainerConverter().convert(compressInfo)
+            ContainerConverter.convert(compressInfo)
             if (compressInfo.error) {
                 listener.onError(IllegalStateException("Error occurs in compress"))
             } else {
@@ -48,12 +60,13 @@ object VideoCompressor {
             }
         }).subscribeOn(Schedulers.io())
                 .doOnSubscribe {
-                    isCompressing = true
+                    compressingParam = param
                     startTime = System.currentTimeMillis()
+                    CancelChecker.reset()
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate {
-                    isCompressing = false
+                    compressingParam = null
                     VideoCompressor.startNewCompress()
                 }
     }
