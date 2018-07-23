@@ -1,7 +1,6 @@
 package com.walkercoding.videocompress
 
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import com.walkercoding.videocompress.videocompress.CompressParam
 import com.walkercoding.videocompress.videocompress.VideoCompressor
@@ -18,7 +17,7 @@ object CompressTest {
 
     private fun getCompressParam(context: Context, case: Case): CompressParam {
         val videoFile = File(case.inputPath)
-        val cacheFile = File(getExternalPictureFileDir(context), String.format(Locale.US, "tmp_%d.mp4", System.currentTimeMillis()))
+        val cacheFile = File(Utils.getExternalPictureFileDir(context), String.format(Locale.US, "tmp_%d.mp4", System.currentTimeMillis()))
 
         val compressParam = CompressParam()
         compressParam.filePath = videoFile.absolutePath
@@ -35,9 +34,6 @@ object CompressTest {
         return compressParam
     }
 
-    private val externalStorageDirectory: File
-        get() = Environment.getExternalStorageDirectory()
-
     fun test(context: Context) {
         compress(getCompressParam(context, MEIZU_2))
     }
@@ -49,26 +45,5 @@ object CompressTest {
                 .doOnError { Log.e("zl", "Error $it path ${param.filePath}") }
                 .doOnComplete { Log.e("zl", "Done ${param.filePath}") }
                 .subscribe({}, {})
-    }
-
-    fun getExternalPictureFileDir(context: Context): File {
-        val rootDir = File(externalStorageDirectory, context.packageName)
-        if (rootDir.exists() && !rootDir.isDirectory) {
-            rootDir.delete()
-        }
-
-        val dir = File(externalStorageDirectory, String.format("%s/%s", context.packageName, "videoPress"))
-        mkdirsIfNeed(dir)
-        return dir
-    }
-
-    private fun mkdirsIfNeed(dir: File) {
-        if (dir.exists() && !dir.isDirectory) {
-            dir.delete()
-        }
-
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
     }
 }
